@@ -131,12 +131,17 @@ namespace Assets.Scripts
 
         // temp, this needs to move to a playback script
         private List<HitMark> _playbackTimes;
+        private float _playbackStartTime;
         private void _startPlayback(AudioClip audio, List<HitMark> times)
         {
             _source.clip = Audio;
             _source.PlayDelayed(0.5f);
             _playbackTimes = times;
-            Utils.DOWait(0.51f).Then(() => _playingBack = true);
+            Utils.DOWait(0.51f).Then(() =>
+            {
+                _playingBack = true;
+                _playbackStartTime = Time.time;
+            });
         }
 
         private void _tickPlayback()
@@ -151,10 +156,12 @@ namespace Assets.Scripts
                 c.a -= Time.deltaTime * 5f;
                 Background.color = c;
                 bool playedDrum = false;
+                var unitySourceTime = Time.time - _playbackStartTime;
+                var timeDiff = unitySourceTime - _source.time;
                 // temp way of just seeing how accurate recording is. this should be a queue or something
                 foreach (var hitmark in _playbackTimes.ToArray())
                 {
-                    if (_source.time >= hitmark.Time)
+                    if (_source.time >= hitmark.Time + timeDiff)
                     {
                         _playbackTimes.Remove(hitmark);
                         if (hitmark.Type == HitType.Red)
