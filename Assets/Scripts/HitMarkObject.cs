@@ -53,10 +53,7 @@ namespace Assets.Scripts
                     if (_fadeOut == null)
                     {
                         Parent.OnHitMarkArrived(this);
-                        var seq = DOTween.Sequence();
-                        seq.Append(_renderer.DOColor(Color.clear, 0.1f));
-                        seq.Append(transform.DOScale(20f, 0.1f));
-                        _fadeOut = seq.Play();
+                        _destroy();
                     }
                 }
             }
@@ -71,6 +68,14 @@ namespace Assets.Scripts
 
             // wtf
             return Vector3.zero;
+        }
+
+        private void _destroy()
+        {
+            var seq = DOTween.Sequence();
+            seq.Join(_renderer.DOColor(Color.clear, 0.1f));
+            seq.Join(transform.DOScale(1f, 0.1f));
+            _fadeOut = seq.Play().Then(() => Destroy(this));
         }
     }
 }
