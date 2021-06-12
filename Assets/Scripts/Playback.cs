@@ -58,6 +58,11 @@ namespace Assets.Scripts
             sfx.clip = DrumSound;
             sfx.Play();
 
+            // slightly modify pitch, but make sure that we use loose time as a seed
+            // that way beats that are grouped together don't sound like alien lasers
+            UnityEngine.Random.InitState(Mathf.RoundToInt(Time.time));
+            sfx.pitch += (UnityEngine.Random.value) / 20f;
+
             // remove the object from the tracked list
             _hitmarks.Remove(obj);
         }
