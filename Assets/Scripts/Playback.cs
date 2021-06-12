@@ -22,7 +22,8 @@ namespace Assets.Scripts
         [HideInInspector]
         public AudioSource Music;
 
-        private bool _playingBack;
+        public bool PlayingBack { get; private set; }
+        public event Action PlaybackFinished;
 
         public void Awake()
         {
@@ -73,7 +74,7 @@ namespace Assets.Scripts
             Music.PlayDelayed(0.5f);
             Utils.DOWait(0.51f).Then(() =>
             {
-                _playingBack = true;
+                PlayingBack = true;
             });
         }
 
@@ -141,6 +142,12 @@ namespace Assets.Scripts
             // remove the object from the tracked list
             _hitmarks.Remove(obj);
 
+            if (_hitmarks.Count <= 0)
+            {
+                // stop playing for now, but probably wait til song end in the future
+                StopPlayback();
+            }
+
             // let's mark the next one! search for next matching color..
             foreach (var hit in _hitmarks)
             {
@@ -151,6 +158,18 @@ namespace Assets.Scripts
                     break;
                 }
             }
+        }
+
+        public void StopPlayback()
+        {
+            Music.Stop();
+            PlayingBack = false;
+            foreach (var hitmark in _hitmarks)
+            {
+                Destroy(hitmark.gameObject);
+            }
+            _hitmarks.Clear();
+            PlaybackFinished?.Invoke();
         }
 
         private HashSet<AudioSource> _sfxSources;

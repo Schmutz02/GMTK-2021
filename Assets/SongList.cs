@@ -15,6 +15,7 @@ public class SongList : MonoBehaviour
         {
             var song = Instantiate(_songPrefab, _songListTransform);
             song.Init(clip);
+            song.gameObject.SetActive(true);
         }
     }
 }

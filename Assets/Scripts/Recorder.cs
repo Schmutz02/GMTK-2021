@@ -8,7 +8,9 @@ namespace Assets.Scripts
 {
     public class Recorder : MonoBehaviour
     {
-        public Button TempStartButton;
+        public Button StopButton;
+        public Button SaveButton;
+        public Button DeleteButton;
         public AudioClip Audio;
         public AudioClip DrumSound;
 
@@ -25,28 +27,37 @@ namespace Assets.Scripts
             _music.playOnAwake = false;
 
             _recTimes = new List<HitMark>();
-
-            TempStartButton.onClick.AddListener(() =>
+            
+            SaveButton.onClick.AddListener(() =>
             {
-                if (!_recording)
-                    _startRecording();
-                else
-                {
-                    _music.Stop();
-                    _recording = false;
-                    
-                    _saveRecording();
+                _saveRecording();
+                StopButton.gameObject.SetActive(true);
+                SaveButton.gameObject.SetActive(false);
+                DeleteButton.gameObject.SetActive(false);
+                Playback.StopPlayback();
+            });
+            DeleteButton.onClick.AddListener(() =>
+            {
+                _recTimes.Clear();
+                StopButton.gameObject.SetActive(true);
+                SaveButton.gameObject.SetActive(false);
+                DeleteButton.gameObject.SetActive(false);
+                Playback.StopPlayback();
+            });
 
-                    // steal times for test playback
-                    var times = _recTimes;
+            StopButton.onClick.AddListener(() =>
+            {
+                _music.Stop();
+                _recording = false;
 
-                    var notes = Utils.LoadNoteRecordingFromFile(Audio.name);
-                    Playback.StartPlayback(Audio, notes);
-
-                    // clear
-                    _recTimes = new List<HitMark>();
-                    _recTimes.Clear();
-                }
+                // steal times for test playback
+                var times = _recTimes;
+                
+                StopButton.gameObject.SetActive(false);
+                SaveButton.gameObject.SetActive(true);
+                DeleteButton.gameObject.SetActive(true);
+                
+                Playback.StartPlayback(Audio, times);
             });
         }
 
@@ -59,6 +70,7 @@ namespace Assets.Scripts
                 // record loop
                 _tickRecording();
             }
+            
             //else if (_playingBack)
             //{
             //    // playback loop (this will move to another script)
@@ -75,6 +87,14 @@ namespace Assets.Scripts
             _music.PlayDelayed(0.5f);
             Utils.DOWait(0.51f).Then(() => _recording = true);
         }
+
+        public void StartRecording(Song song)
+        {
+            Audio = song.Audio;
+            StopButton.gameObject.SetActive(true);
+            _startRecording();
+        }
+
         private void _tickRecording()
         {
             if (!_music.isPlaying)
