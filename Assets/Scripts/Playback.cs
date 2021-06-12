@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -12,6 +13,11 @@ namespace Assets.Scripts
         public AudioClip DrumSound;
 
         public LineRenderer Path;
+
+        public TextMeshProUGUI ScoreText;
+        public TextMeshProUGUI ReactionText;
+
+        public int Score;
 
         [HideInInspector]
         public AudioSource Music;
@@ -34,6 +40,13 @@ namespace Assets.Scripts
         {
             // temp, clear out previous hitmark objects
             _hitmarks.Clear();
+
+            // reset score
+            Score = 0;
+            UpdateScore();
+
+            // reset reactions
+            ReactionText.text = "";
 
             // First, let's create all of the necessary HitMarkObjects
             foreach (var hitmark in times)
@@ -64,9 +77,15 @@ namespace Assets.Scripts
             });
         }
 
+        public void UpdateScore()
+        {
+            // displays score as 0000000
+            ScoreText.text = $"{Score}".PadLeft(7, '0');
+        }
+
         public void OnHitMarkTapped(HitMarkObject obj, float error)
         {
-            if (error < 0.15f)
+            if (Mathf.Abs(error) < 0.15f)
             {
                 // for now, let's just uhhh play the drum sound
                 var sfx = gameObject.AddComponent<AudioSource>();
@@ -79,6 +98,44 @@ namespace Assets.Scripts
                 // that way beats that are grouped together don't sound like alien lasers
                 UnityEngine.Random.InitState(Mathf.RoundToInt(Time.time));
                 sfx.pitch += (UnityEngine.Random.value) / 20f;
+
+                // Modify score based on error
+                // were we really close? todo: bpm math
+                float err = Mathf.Abs(error);
+                int toAdd = 0;
+                string reaction = "";
+                if (err < 0.04f)
+                {
+                    // osu scoring kEKW
+                    toAdd = 300;
+                    reaction = "Perfect!";
+                }
+                else if (err < 0.07f)
+                {
+                    // osu scoring kEKW
+                    toAdd = 100;
+                    reaction = "Cool!";
+                }
+                else if (err < 0.12f)
+                {
+                    // osu scoring kEKW
+                    toAdd = 50;
+                    reaction = "It's ok!";
+                }
+
+                Debug.Log($"Error: {err}");
+
+                Score += toAdd;
+                UpdateScore();
+
+                // todo: juice this
+                ReactionText.text = reaction;
+
+                _sfxSources.Add(sfx);
+            }
+            else
+            {
+
             }
 
             // remove the object from the tracked list
@@ -99,52 +156,6 @@ namespace Assets.Scripts
         private HashSet<AudioSource> _sfxSources;
         public void Update()
         {
-            //if (!_music.isPlaying)
-            //{
-            //    // we done, idk
-            //}
-            //else
-            //{
-            //    //var c = Background.color;
-            //    //c.a -= Time.deltaTime * 5f;
-            //    //Background.color = c;
-            //    bool playedDrum = false;
-
-            //    foreach (var hitmarkObj in _hitmarks)
-            //    {
-            //        var hitmark = hitmarkObj.Data;
-            //    }
-
-            //    //// temp way of just seeing how accurate recording is. this should be a queue or something
-            //    //foreach (var hitmark in _playbackTimes.ToArray())
-            //    //{
-            //    //    if (_music.time >= hitmark.Time)
-            //    //    {
-            //    //        _playbackTimes.Remove(hitmark);
-            //    //        if (hitmark.Type == HitType.Red)
-            //    //        {
-            //    //            Background.color = Color.red;
-            //    //        }
-            //    //        else if (hitmark.Type == HitType.Blue)
-            //    //        {
-            //    //            Background.color = Color.blue;
-            //    //        }
-            //    //        if (!playedDrum)
-            //    //        {
-            //    //            var sfx = gameObject.AddComponent<AudioSource>();
-            //    //            sfx.playOnAwake = false;
-            //    //            sfx.volume = 0.75f;
-            //    //            sfx.clip = DrumSound;
-            //    //            sfx.Play();
-            //    //            _sfxSources.Add(sfx);
-
-            //    //            playedDrum = true;
-            //    //        }
-            //    //    }
-            //    //    else break;
-            //    //}
-            //}
-
             foreach (var drumSound in _sfxSources.ToArray())
             {
                 if (!drumSound.isPlaying)

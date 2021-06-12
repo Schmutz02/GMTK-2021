@@ -45,7 +45,7 @@ namespace Assets.Scripts
             else
             {
                 float dist = Parent.Music.time - Hitmark.Time;
-                if (dist <= -0.1f)
+                if (dist <= -0.15f)
                 {
                     // just move along normally
                     _updatePosition(dist);
@@ -57,7 +57,7 @@ namespace Assets.Scripts
                     // but also check for hits
                     if (_next)
                     {
-                        if (dist <= 0.1f)
+                        if (dist <= 0.15f)
                         {
                             // todo: keybinds
                             if (Input.GetKeyDown(KeyCode.Z) && Hitmark.Type == HitType.Red)
