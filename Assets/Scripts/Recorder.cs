@@ -34,13 +34,14 @@ namespace Assets.Scripts
                 {
                     _music.Stop();
                     _recording = false;
-
-                    // this does nothing right now
+                    
                     _saveRecording();
 
                     // steal times for test playback
                     var times = _recTimes;
-                    Playback.StartPlayback(Audio, times);
+
+                    var notes = Utils.LoadNoteRecordingFromFile(Audio.name);
+                    Playback.StartPlayback(Audio, notes);
 
                     // clear
                     _recTimes = new List<HitMark>();
@@ -113,10 +114,7 @@ namespace Assets.Scripts
         }
         private void _saveRecording()
         {
-            foreach (var hitmark in _recTimes)
-            {
-                Debug.Log($"{hitmark.Type} at {hitmark.Time}");
-            }
+            Utils.SaveNoteRecordingToFile(_recTimes, Audio.name);
         }
     }
 }

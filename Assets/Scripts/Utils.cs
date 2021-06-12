@@ -1,14 +1,61 @@
 ﻿using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
     public static class Utils
     {
+        public static void SaveNoteRecordingToFile(List<HitMark> notes, string songName)
+        {
+            using (var wtr = new StreamWriter($"Assets/Resources/Notes/{songName}.txt"))
+            {
+                wtr.WriteLine(songName);
+                foreach (var note in notes)
+                {
+                    var noteData = $"{note.Time},{note.Type}";
+                    wtr.WriteLine(noteData);
+                }
+            }
+        }
+
+        public static List<HitMark> LoadNoteRecordingFromFile(string songName)
+        {
+            if (!File.Exists($"Assets/Resources/Notes/{songName}.txt"))
+                return null;
+            
+            var notes = new List<HitMark>();
+            using (var rdr = new StreamReader($"Assets/Resources/Notes/{songName}.txt"))
+            {
+                var savedSongName = rdr.ReadLine();
+                if (savedSongName != songName)
+                {
+                    Debug.Log("Different song found");
+                    return null;
+                }
+
+                string line;
+                while ((line = rdr.ReadLine()) != null)
+                {
+                    var noteData = line.Split(',');
+                    var note = new HitMark()
+                    {
+                        Time = float.Parse(noteData[0]),
+                        Type = (HitType) Enum.Parse(typeof(HitType), noteData[1])
+                    };
+                    
+                    notes.Add(note);
+                }
+            }
+
+            return notes;
+        }
+        
         // DOTween helpers.
 
         /// <summary>
