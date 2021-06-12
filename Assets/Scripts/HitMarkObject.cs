@@ -22,13 +22,16 @@ namespace Assets.Scripts
 
         private bool _next;
 
+        private Vector3 _redStartOffset;
+
         public void Start()
         {
             _renderer = gameObject.AddComponent<SpriteRenderer>();
             _renderer.sprite = ResourceHolder.GetHitmarkSprite(Hitmark.Type);
             _renderer.sortingOrder = 5;
 
-            transform.position = Parent.Path.GetPosition(0);
+            _redStartOffset =  _resolveTargetFromType(Hitmark.Type) - _resolveTargetFromType(HitType.Blue);
+            transform.position = Parent.Path.GetPosition(0) + _redStartOffset;
             transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
         }
 
@@ -92,7 +95,7 @@ namespace Assets.Scripts
 
         private void _updatePosition(float dist)
         {
-            Vector3 start = Parent.Path.GetPosition(0);
+            Vector3 start = Parent.Path.GetPosition(0) + _redStartOffset;
             Vector3 end = _resolveTargetFromType(Hitmark.Type);
             Vector3 diff = end - start;
             Vector3 diffFromTarget = start - end;
