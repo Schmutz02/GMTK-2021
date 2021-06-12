@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Assets.Scripts
 {
@@ -23,7 +24,7 @@ namespace Assets.Scripts
         public AudioSource Music;
 
         public bool PlayingBack { get; private set; }
-        public event Action PlaybackFinished;
+        public UnityEvent PlaybackFinished;
 
         public void Awake()
         {
@@ -33,6 +34,12 @@ namespace Assets.Scripts
             _next = new Dictionary<HitType, HitMarkObject>();
             _next[HitType.Blue] = null;
             _next[HitType.Red] = null;
+        }
+
+        public void StartPlayback(Song song)
+        {
+            var times = Utils.LoadNoteRecordingFromFile(song.Audio.name);
+            StartPlayback(song.Audio, times);
         }
 
         private Dictionary<HitType, HitMarkObject> _next;
@@ -169,7 +176,7 @@ namespace Assets.Scripts
                 Destroy(hitmark.gameObject);
             }
             _hitmarks.Clear();
-            PlaybackFinished?.Invoke();
+            PlaybackFinished.Invoke();
         }
 
         private HashSet<AudioSource> _sfxSources;
