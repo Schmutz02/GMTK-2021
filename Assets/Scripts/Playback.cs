@@ -23,8 +23,12 @@ namespace Assets.Scripts
             Music = gameObject.AddComponent<AudioSource>();
             _sfxSources = new HashSet<AudioSource>();
             _hitmarks = new List<HitMarkObject>();
+            _next = new Dictionary<HitType, HitMarkObject>();
+            _next[HitType.Blue] = null;
+            _next[HitType.Red] = null;
         }
 
+        private Dictionary<HitType, HitMarkObject> _next;
         private List<HitMarkObject> _hitmarks;
         public void StartPlayback(AudioClip audio, List<HitMark> times)
         {
@@ -39,6 +43,17 @@ namespace Assets.Scripts
                 mark.Hitmark = hitmark;
                 mark.Parent = this;
                 _hitmarks.Add(mark);
+
+                if (_next[HitType.Blue] == null && hitmark.Type == HitType.Blue)
+                {
+                    _next[HitType.Blue] = mark;
+                    _next[HitType.Blue].SetAsNext();
+                }
+                if (_next[HitType.Red] == null && hitmark.Type == HitType.Red)
+                {
+                    _next[HitType.Red] = mark;
+                    _next[HitType.Red].SetAsNext();
+                }
             }
 
             Music.clip = audio;
@@ -49,22 +64,36 @@ namespace Assets.Scripts
             });
         }
 
-        public void OnHitMarkArrived(HitMarkObject obj)
+        public void OnHitMarkTapped(HitMarkObject obj, float error)
         {
-            // for now, let's just uhhh play the drum sound
-            var sfx = gameObject.AddComponent<AudioSource>();
-            sfx.playOnAwake = false;
-            sfx.volume = 0.75f;
-            sfx.clip = DrumSound;
-            sfx.Play();
+            if (error < 0.15f)
+            {
+                // for now, let's just uhhh play the drum sound
+                var sfx = gameObject.AddComponent<AudioSource>();
+                sfx.playOnAwake = false;
+                sfx.volume = 0.75f;
+                sfx.clip = DrumSound;
+                sfx.Play();
 
-            // slightly modify pitch, but make sure that we use loose time as a seed
-            // that way beats that are grouped together don't sound like alien lasers
-            UnityEngine.Random.InitState(Mathf.RoundToInt(Time.time));
-            sfx.pitch += (UnityEngine.Random.value) / 20f;
+                // slightly modify pitch, but make sure that we use loose time as a seed
+                // that way beats that are grouped together don't sound like alien lasers
+                UnityEngine.Random.InitState(Mathf.RoundToInt(Time.time));
+                sfx.pitch += (UnityEngine.Random.value) / 20f;
+            }
 
             // remove the object from the tracked list
             _hitmarks.Remove(obj);
+
+            // let's mark the next one! search for next matching color..
+            foreach (var hit in _hitmarks)
+            {
+                if (hit.Hitmark.Type == obj.Hitmark.Type)
+                {
+                    _next[obj.Hitmark.Type] = hit;
+                    _next[obj.Hitmark.Type].SetAsNext();
+                    break;
+                }
+            }
         }
 
         private HashSet<AudioSource> _sfxSources;
