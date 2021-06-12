@@ -77,7 +77,7 @@ namespace Assets.Scripts
                             if (!_leaving)
                             {
                                 Parent.OnHitMarkTapped(this, 10000f);
-                                _destroy();
+                                _destroy(good: false);
                             }
                         }
                     }
